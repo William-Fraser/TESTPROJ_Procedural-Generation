@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Reflection;
 
-public class ProceduralGen : MonoBehaviour
+public class ProcGen_V0_1 : MonoBehaviour
 {
     public int length = 10;
     public int height = 10;
