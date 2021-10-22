@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Reflection;
 
-public class ProcGen_V0_1 : MonoBehaviour
-{
+public class WallGenerator : MonoBehaviour
+{ /// INCOMPLETE, doesn't load textured blocks
+
     public int length = 10;
     public int height = 10;
     private GameObject[,] cubes;
@@ -26,17 +27,4 @@ public class ProcGen_V0_1 : MonoBehaviour
         }
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
-/*
-    private Material GetDefaultMaterial()
-    {
-        if (getBuiltinExtraResourcesMethod == null) {
-            BindingFlags bfs = BindingFlags.NonPublic | BindingFlags.Static;
-            getBuiltinExtraResourcesMethod = typeof(EditorGUIUtility)
-        }
-    }*/
 }
