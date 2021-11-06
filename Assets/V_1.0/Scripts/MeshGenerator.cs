@@ -68,6 +68,14 @@ public class MeshGenerator : MonoBehaviour
 
     void CreateWallMesh()
     {
+        if(walls.gameObject.GetComponent<MeshCollider>())
+        {
+            MeshCollider[] meshs = walls.GetComponents<MeshCollider>();
+            foreach (MeshCollider mesh in meshs)
+            { 
+                mesh.enabled = false;
+            }
+        }
 
         CalculateMeshOutlines();
 
