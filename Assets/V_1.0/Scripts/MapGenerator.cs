@@ -35,7 +35,6 @@ public class MapGenerator : MonoBehaviour
         if (Input.GetMouseButtonDown(0))
         {
             GenerateMap();
-
         }
     }
     private void OnDrawGizmos()
