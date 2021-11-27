@@ -173,7 +173,7 @@ public class PlayerController : MonoBehaviour
         }
         if (p_isGrounded == false)
         {
-            Debug.Log("falling");
+            //Debug.Log("falling");
             Fall();
             ActivateKillBarrier();
         }

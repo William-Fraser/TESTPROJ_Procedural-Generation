@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class TerrainGenerator : MonoBehaviour
+public class TerrainGeneratorTest : MonoBehaviour
 {
     public GameObject player; // offload this into game manager, which should also handle terrain generator class
 
@@ -19,15 +19,15 @@ public class TerrainGenerator : MonoBehaviour
 
     [Header("private debug")] // [SHIFT+ALT] all fields to easily make private
     //chunk loadings
-    public Chunk targetChunk;
+    public TestChunk targetChunk;
     public List<Vector3> loadedChunkPositions = new List<Vector3>();
-    public Dictionary<Vector3, Chunk> loadedChunks;
+    public Dictionary<Vector3, TestChunk> loadedChunks;
 
-    private Chunk chunkGeneration;
+    private TestChunk chunkGeneration;
 
     void Start()
     {
-        loadedChunks = new Dictionary<Vector3, Chunk>();
+        loadedChunks = new Dictionary<Vector3, TestChunk>();
 
         GenerateWorld();
 
@@ -53,7 +53,7 @@ public class TerrainGenerator : MonoBehaviour
             {
                 //instance and position Chunk object pool
                 Vector3 positioning = new Vector3(x*chunkSize, 0, z*chunkSize);
-                chunkGeneration = new Chunk((int)positioning.x, (int)positioning.z, groundMat, chunkSize, randomness, yScale);
+                chunkGeneration = new TestChunk((int)positioning.x, (int)positioning.z, groundMat, chunkSize, randomness, yScale);
                 loadedChunkPositions.Add(chunkGeneration.chunkObject.transform.position);
                 loadedChunks.Add(chunkGeneration.chunkObject.transform.position, chunkGeneration);
 
@@ -100,7 +100,7 @@ public class TerrainGenerator : MonoBehaviour
     }
 
     //check these only when target chunk changes
-    private void FindTarget(Chunk previousTarget, Vector3 changeDistance)
+    private void FindTarget(TestChunk previousTarget, Vector3 changeDistance)
     {
         targetChunk = loadedChunks[previousTarget.chunkObject.transform.position + changeDistance];
     }
@@ -196,7 +196,7 @@ public class TerrainGenerator : MonoBehaviour
                 loadedChunks[pos].ReloadChunk(newPos);
                 
                 //readding chunk to dictionary and saving it's new position
-                Chunk chunkLoader = loadedChunks[pos];
+                TestChunk chunkLoader = loadedChunks[pos];
                 loadedChunks.Remove(pos);
 
                 loadedChunks.Add(newPos, chunkLoader);
@@ -215,7 +215,7 @@ public class TerrainGenerator : MonoBehaviour
 
 }
 
-public class Chunk
+public class TestChunk
 {
     private int chunkSize;
     private float randomness;
@@ -224,7 +224,7 @@ public class Chunk
 
     public GameObject chunkObject = new GameObject("Chunk");
 
-    public Chunk(int xPos, int zPos, Material groundMat, int chunkSize, float randomness, float yScale)
+    public TestChunk(int xPos, int zPos, Material groundMat, int chunkSize, float randomness, float yScale)
     {
         this.chunkSize = chunkSize;
         this.randomness = randomness;

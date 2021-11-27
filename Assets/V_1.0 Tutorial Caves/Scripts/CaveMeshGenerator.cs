@@ -2,7 +2,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
-public class MeshGenerator : MonoBehaviour
+public class CaveMeshGenerator : MonoBehaviour
 {
     public int tileAmount = 10;
 
@@ -21,7 +21,6 @@ public class MeshGenerator : MonoBehaviour
 
     public void GenerateMesh(int[,] map, float squareSize)
     {
-
         triangleDictionary.Clear();
         outlines.Clear();
         checkedVertices.Clear();
@@ -54,7 +53,6 @@ public class MeshGenerator : MonoBehaviour
             uvs[i] = new Vector2(percentX, percentY);
         }
         mesh.uv = uvs;
-
 
         if (is2D)
         {

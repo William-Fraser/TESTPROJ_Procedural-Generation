@@ -86,7 +86,7 @@ public class MapGenerator : MonoBehaviour
             }
         }
 
-        MeshGenerator meshGen = GetComponent<MeshGenerator>();
+        CaveMeshGenerator meshGen = GetComponent<CaveMeshGenerator>();
         meshGen.GenerateMesh(borderedMap, 1);
     }
     private void RandomFillMap()

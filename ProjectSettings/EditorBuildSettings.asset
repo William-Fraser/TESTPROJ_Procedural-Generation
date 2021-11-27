@@ -6,6 +6,6 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/V_1.0/Procedural_Generation_V1.0.unity
-    guid: 123272271ba41df45b06408cb6cbf8c5
+    path: Assets/V_2.0 Infinite Terrain/Procedural_Generation_V 2.0 Terrain.unity
+    guid: f3604c9cd4b34714f9fd4c980cb2e65c
   m_configObjects: {}
