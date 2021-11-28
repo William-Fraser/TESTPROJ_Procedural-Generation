@@ -11,23 +11,23 @@ public class TerrainMeshGenerator : MonoBehaviour
 
     public void SetUpMesh(Material material)
     {
+        this.material = material;
         mesh = new Mesh();
         GetComponent<MeshFilter>().mesh = mesh;
-        this.material = material;
     }
 
     public void GenMesh(Vector3 node0, Vector3 node1, Vector3 node2, Vector3 node3)
     {
         vertices = new Vector3[]
         {
-            new Vector3(0, node0.y, 0),
-            new Vector3(1, node1.y, 0),
-            new Vector3(1, node2.y, 1),
-            new Vector3(0, node3.y, 1),
+            node0,
+            node1,
+            node2,
+            node3
         };
 
         //check which way to spit quad here
-        Debug.LogError($"{node1.y }%{ node3.y }>{ node0.y }%{ node2.y}: {node1.y % node3.y > node0.y % node2.y} if true produce odd split");
+        //Debug.LogError($"{node1.y }%{ node3.y }>{ node0.y }%{ node2.y}: {node1.y % node3.y > node0.y % node2.y} if true produce odd split");
         if (node1.y % node3.y > node0.y % node2.y)
         {
             triangles = new int[]
@@ -56,7 +56,6 @@ public class TerrainMeshGenerator : MonoBehaviour
         mesh.triangles = triangles;
         mesh.RecalculateNormals();
         GetComponent<MeshRenderer>().material = material;
-
         GetComponent<MeshCollider>().sharedMesh = mesh;
     }
 }

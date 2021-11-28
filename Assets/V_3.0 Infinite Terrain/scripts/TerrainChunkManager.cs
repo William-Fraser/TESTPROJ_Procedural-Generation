@@ -108,7 +108,6 @@ public class TerrainChunkManager : MonoBehaviour
         }
     }
 
-
     #region Chunk Loading Methods
     // only happens on target change
     private void FindTarget(Chunk previousTarget, Vector3 changeDistance)
@@ -218,24 +217,18 @@ public class TerrainChunkManager : MonoBehaviour
     private void LoadChunk(Vector3 newPos) // adds/instances chunk from subclass in position
     {
         //Debug.LogWarning($"Chunk Loaded on :{position}");
-        int iterator = 0; // used to locade loaded position
+        int iterator = 0; // used to locate loaded position
         foreach (Vector3 pos in loadedChunkPositions)
         {
             if (!loadedChunks[pos].chunkObject.activeInHierarchy)
             {
                 Debug.LogWarning($"loading chunk from {pos} to {newPos}");
 
-                //calculating neighboring chunks needed for loading the mesh
-                Chunk eastChunk = loadedChunks[newPos + new Vector3(chunkSize,0,0)];
-                Chunk southeastChunk = loadedChunks[newPos + new Vector3(chunkSize, 0, chunkSize)];
-                Chunk southChunk = loadedChunks[newPos + new Vector3(0, 0, chunkSize)];
-
-                loadedChunks[pos].ReloadChunk(newPos, eastChunk, southeastChunk, southChunk);
-                
-                //readding chunk to dictionary and saving it's new position
+                //readding chunk to dictionary to save it's new position
                 Chunk chunkLoader = loadedChunks[pos];
-                loadedChunks.Remove(pos);
+                ConnectAndLoadChunk(chunkLoader, newPos);
 
+                loadedChunks.Remove(pos);
                 loadedChunks.Add(newPos, chunkLoader);
                 loadedChunkPositions[iterator] = newPos;
                 
@@ -244,6 +237,35 @@ public class TerrainChunkManager : MonoBehaviour
             iterator++;
         }
     }
+
+    private void ConnectAndLoadChunk(Chunk loadingChunk, Vector3 newPos)
+    {
+        //calculating neighboring chunks needed for loading the mesh
+        Vector3 east = newPos + new Vector3(chunkSize, 0, 0);
+        Vector3 southeast = newPos + new Vector3(chunkSize, 0, chunkSize);
+        Vector3 south = newPos + new Vector3(0, 0, chunkSize);
+        Chunk eastChunk;
+        Chunk southeastChunk;
+        Chunk southChunk;
+
+        //if chunks aren't on the list don't load to them // null value is to be handled inside ReloadChunk
+        if (loadedChunks.ContainsKey(east))
+        { eastChunk = loadedChunks[newPos + new Vector3(chunkSize, 0, 0)]; }
+        else
+        { eastChunk = null; }
+
+        if (loadedChunks.ContainsKey(southeast))
+        { southeastChunk = loadedChunks[newPos + new Vector3(chunkSize, 0, chunkSize)]; }
+        else
+        { southeastChunk = null; }
+
+        if (loadedChunks.ContainsKey(south))
+        { southChunk = loadedChunks[newPos + new Vector3(0, 0, chunkSize)]; }
+        else
+        { southChunk = null; }
+        
+        loadingChunk.ReloadChunk(newPos, eastChunk, southeastChunk, southChunk);
+    }
     #endregion
 }
 
@@ -251,8 +273,8 @@ public class Chunk
 {
     public GameObject chunkObject = new GameObject("Chunk");
 
-    private GameObject[,] groundPoints;
-    private TerrainMeshGenerator meshGen;
+    private GameObject[,] groundNodes;
+    private GameObject[,] appliedMesh;
     private int chunkSize;
     private float roughness;
     private float yScale;
@@ -262,7 +284,8 @@ public class Chunk
         this.chunkSize = chunkSize;
         this.roughness = roughness;
         this.yScale = yScale;
-        groundPoints = new GameObject[chunkSize, chunkSize];
+        groundNodes = new GameObject[chunkSize, chunkSize];
+        appliedMesh = new GameObject[chunkSize, chunkSize];
 
         chunkObject.transform.position = new Vector3(chunkX, 0, chunkZ);
 
@@ -271,11 +294,9 @@ public class Chunk
         {
             for (int z = 0; z < chunkSize; z++)
             {
-                groundPoints[x, z] = new GameObject("Node", typeof(TerrainMeshGenerator), typeof(MeshFilter), typeof(MeshRenderer), typeof(MeshCollider));
-
-                //position node
-                groundPoints[x, z].transform.position = new Vector3(chunkX + x - 1, (int)PerlinNoise((float)chunkX + x, (float)chunkZ + z), chunkZ + z - 1);
-                groundPoints[x, z].transform.parent = chunkObject.transform;
+                groundNodes[x, z] = new GameObject("Node");
+                groundNodes[x, z].transform.position = new Vector3(chunkX + x, (int)PerlinNoise((float)chunkX + x, (float)chunkZ + z), chunkZ + z);
+                groundNodes[x, z].transform.parent = chunkObject.transform;
             }
         }
 
@@ -285,13 +306,14 @@ public class Chunk
             for (int z = 0; z < chunkSize; z++)
             {
                 //set up the mesh
-                groundPoints[x, z].GetComponent<TerrainMeshGenerator>().SetUpMesh(groundMat);
+                appliedMesh[x, z] = new GameObject("Active Mesh", typeof(TerrainMeshGenerator), typeof(MeshFilter), typeof(MeshRenderer), typeof(MeshCollider));
+                appliedMesh[x, z].GetComponent<TerrainMeshGenerator>().SetUpMesh(groundMat);
+                appliedMesh[x, z].transform.parent = chunkObject.transform;
 
                 //generate mesh // generated in a square shape starting in topleft going clockwise for mesh gen rules 
-                if (x+1 == chunkSize || z+1 == chunkSize)
-                { groundPoints[x, z].GetComponent<TerrainMeshGenerator>().GenMesh(groundPoints[x, z].transform.position, groundPoints[x, z].transform.position, groundPoints[x, z].transform.position, groundPoints[x, z].transform.position); }
-                else { groundPoints[x, z].GetComponent<TerrainMeshGenerator>().GenMesh(groundPoints[x, z].transform.position, groundPoints[x + 1, z].transform.position, groundPoints[x + 1, z + 1].transform.position, groundPoints[x, z + 1].transform.position); }
-
+                if (x + 1 == chunkSize || z + 1 == chunkSize)
+                { appliedMesh[x, z].GetComponent<TerrainMeshGenerator>().GenMesh(groundNodes[x, z].transform.position, groundNodes[x, z].transform.position+Vector3.right, groundNodes[x, z].transform.position+Vector3.right+Vector3.forward, groundNodes[x, z].transform.position+Vector3.forward); }
+                else { appliedMesh[x, z].GetComponent<TerrainMeshGenerator>().GenMesh(groundNodes[x, z].transform.position, groundNodes[x + 1, z].transform.position, groundNodes[x + 1, z + 1].transform.position, groundNodes[x, z + 1].transform.position); }
             }
         }
     }
@@ -332,7 +354,7 @@ public class Chunk
         {
             for (int z = 0; z < chunkSize; z++)
             {
-                groundPoints[x, z].transform.position = new Vector3(xPos + x, (int)PerlinNoise((float)xPos + x, (float)zPos + z), zPos + z);
+                groundNodes[x, z].transform.position = new Vector3(xPos + x, (int)PerlinNoise((float)xPos + x, (float)zPos + z), zPos + z);
             }
         }
     }
@@ -344,34 +366,54 @@ public class Chunk
             for (int z = 0; z < chunkSize; z++)
             {
                 //generate mesh // generated in a square shape starting in topleft going clockwise for mesh gen rules 
-                if (x + 1 == chunkSize)
-                { // if chunks needs nodes outside of chunk access the passed chunk // #MN: 0 access' the neighbor (since it's the first) 
-                    groundPoints[x, z].GetComponent
+                if (x != chunkSize && z != chunkSize) 
+                { 
+                    appliedMesh[x, z].GetComponent
                         <TerrainMeshGenerator>().GenMesh(
-                    groundPoints[x, z].transform.position,
-                    eChunk.groundPoints[0, z].transform.position,
-                    eChunk.groundPoints[0, z+1].transform.position,
-                    groundPoints[x, z+1].transform.position); 
+                    groundNodes[x, z].transform.position, 
+                    groundNodes[x + 1, z].transform.position, 
+                    groundNodes[x + 1, z + 1].transform.position, 
+                    groundNodes[x, z + 1].transform.position); 
                 }
-                else if (z + 1 == chunkSize)
+                else if (x == chunkSize)
                 {
-                    groundPoints[x, z].GetComponent
-                        <TerrainMeshGenerator>().GenMesh(
-                    groundPoints[x, z].transform.position,
-                    groundPoints[x+1, z].transform.position,
-                    sChunk.groundPoints[x+1, 0].transform.position,
-                    sChunk.groundPoints[x, 0].transform.position);
+                    if (eChunk != null)// if chunk is null don't generate edge
+                    {
+                        Debug.LogWarning("Try Generating edge");
+                        appliedMesh[x, z].GetComponent
+                            <TerrainMeshGenerator>().GenMesh(
+                        groundNodes[x, z].transform.position,
+                        eChunk.groundNodes[0, z].transform.position,// if chunks needs nodes outside of chunk access the passed chunk // #MN: 0 access' neighbor node (since it's the first node in the chunk) 
+                        eChunk.groundNodes[0, z + 1].transform.position,
+                        groundNodes[x, z + 1].transform.position);
+                    }
                 }
-                else if (x + 1 == chunkSize && z + 1 == chunkSize)
+                else if (z == chunkSize)
                 {
-                    groundPoints[x, z].GetComponent
-                        <TerrainMeshGenerator>().GenMesh(
-                    groundPoints[x, z].transform.position,
-                    eChunk.groundPoints[0, z].transform.position,
-                    seChunk.groundPoints[0, 0].transform.position,
-                    sChunk.groundPoints[x, 0].transform.position);
+                    if (sChunk != null)
+                    {
+                        Debug.LogWarning("Generating edge");
+                        appliedMesh[x, z].GetComponent
+                            <TerrainMeshGenerator>().GenMesh(
+                        groundNodes[x, z].transform.position,
+                        groundNodes[x+1, z].transform.position,
+                        sChunk.groundNodes[x+1, 0].transform.position,
+                        sChunk.groundNodes[x, 0].transform.position);
+                    }
                 }
-                else { groundPoints[x, z].GetComponent<TerrainMeshGenerator>().GenMesh(groundPoints[x, z].transform.position, groundPoints[x + 1, z].transform.position, groundPoints[x + 1, z + 1].transform.position, groundPoints[x, z + 1].transform.position); }
+                else if (x == chunkSize && z == chunkSize)
+                {
+                    if (eChunk != null || sChunk !=null )
+                    {
+                        Debug.LogWarning("Generating edge");
+                        appliedMesh[x, z].GetComponent
+                            <TerrainMeshGenerator>().GenMesh(
+                        groundNodes[x, z].transform.position,
+                        eChunk.groundNodes[0, z].transform.position,
+                        seChunk.groundNodes[0, 0].transform.position,
+                        sChunk.groundNodes[x, 0].transform.position);
+                    }
+                }
             }
         }
     }

@@ -261,9 +261,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   player: {fileID: 6023200169422309552, guid: 212fe23054b44764faa097b3578b499b, type: 3}
   seed: 0
-  renderDistance: 1
-  chunkSize: 3
+  renderDistance: 2
+  chunkSize: 5
   yScale: 1
-  randomness: 1
+  roughness: 1
   groundMat: {fileID: 2100000, guid: 6364af44de72d5c4dafdb09585063dc3, type: 2}
   loadedChunkPositions: []
