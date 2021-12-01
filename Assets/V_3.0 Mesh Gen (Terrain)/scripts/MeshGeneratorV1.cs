@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class TerrainMeshGenerator : MonoBehaviour
+public class MeshGeneratorV1 : MonoBehaviour
 {
     private Material material;
     private Mesh mesh;
@@ -16,7 +16,7 @@ public class TerrainMeshGenerator : MonoBehaviour
         GetComponent<MeshFilter>().mesh = mesh;
     }
 
-    public void GenMesh(Vector3 node0, Vector3 node1, Vector3 node2, Vector3 node3)
+    public void GenSplitSquareMesh(Vector3 node0, Vector3 node1, Vector3 node2, Vector3 node3)
     {
         vertices = new Vector3[]
         {
@@ -27,7 +27,6 @@ public class TerrainMeshGenerator : MonoBehaviour
         };
 
         //check which way to spit quad here
-        //Debug.LogError($"{node1.y }%{ node3.y }>{ node0.y }%{ node2.y}: {node1.y % node3.y > node0.y % node2.y} if true produce odd split");
         if (node1.y % node3.y > node0.y % node2.y)
         {
             triangles = new int[]
