@@ -2,20 +2,38 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MeshGeneratorV1 : MonoBehaviour
+public class TerrainMeshGen : MonoBehaviour
 {
-    private Material material;
+    public Material material;
+    
     private Mesh mesh;
     private Vector3[] vertices;
     private int[] triangles;
 
-    public GameObject SetUpMesh(GameObject GO, Material material)
+    private void Start()
     {
-        this.material = material;
-        mesh = new Mesh();
-        GO.GetComponent<MeshFilter>().mesh = mesh;
+        TerrainNodeGen nodeGen = GetComponent<TerrainNodeGen>();
 
-        return GO;
+        //place mesh
+        for (int x = 0; x < nodeGen.terrainSize; x++)
+        {
+            for (int z = 0; z < nodeGen.terrainSize; z++)
+            {
+                Debug.Log($"mesh: x: {x}, z: {z}");
+
+                if (x < nodeGen.terrainSize-1 && z < nodeGen.terrainSize-1)
+                {
+                    Vector3 node0 = nodeGen.GroundNodes[x, z].transform.position;
+                    Vector3 node1 = nodeGen.GroundNodes[x+1, z].transform.position;
+                    Vector3 node2 = nodeGen.GroundNodes[x+1, z+1].transform.position;
+                    Vector3 node3 = nodeGen.GroundNodes[x, z+1].transform.position;
+
+                    GameObject meshGeneration = new GameObject("Active Mesh", typeof(MeshFilter), typeof(MeshRenderer), typeof(MeshCollider));
+                    meshGeneration = GenSplitSquareMesh(meshGeneration, node0, node1, node2, node3);
+                }
+
+            }
+        }
     }
 
     public GameObject GenSplitSquareMesh(GameObject GO, Vector3 node0, Vector3 node1, Vector3 node2, Vector3 node3)
@@ -37,8 +55,8 @@ public class MeshGeneratorV1 : MonoBehaviour
                 3, 2, 1,
             };
         }
-        else 
-        { 
+        else
+        {
             triangles = new int[]
             {
                 0, 3, 2,
@@ -54,7 +72,7 @@ public class MeshGeneratorV1 : MonoBehaviour
         mesh = GO.GetComponent<MeshFilter>().mesh;
 
         mesh.Clear();
-        
+
         mesh.vertices = vertices;
         mesh.triangles = triangles;
         mesh.RecalculateNormals();

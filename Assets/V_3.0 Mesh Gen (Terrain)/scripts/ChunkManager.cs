@@ -4,47 +4,49 @@ using UnityEngine;
 
 public class ChunkManager : MonoBehaviour
 {
-    //public fields
-    public ChunkGenerator chunkGenerator;
- 
-    //private fields
+    public Chunk targetChunk;
+    public Dictionary<Vector3, Chunk> loadedChunks = new Dictionary<Vector3, Chunk>();
     [SerializeField] // serialized for viewing
-    private List<Vector3> loadedChunkPositions = new List<Vector3>();
-    private Chunk targetChunk;
-    private Dictionary<Vector3, Chunk> loadedChunks;
-
-    //accessors
-    public Dictionary<Vector3, Chunk> LoadedChunks { get { return loadedChunks; } }
-    public List<Vector3> LoadedChunkPositions { get { return loadedChunkPositions; } }
-    public Chunk TargetChunk { set { targetChunk = value; } }
-
-    void Start()
-    {
-        loadedChunks = new Dictionary<Vector3, Chunk>();
-        
-        //intitalizes chunk subclass
-        chunkGenerator.GenerateNodes(this); // this references the current script that handles the generated chunks
-
-        Debug.Log($"Inital Target Chunk: {targetChunk.chunkObject.transform.position}");
-
-        // spawning debug player 
-        float spawnPoint = targetChunk.chunkObject.transform.position.x + ((float)chunkGenerator.chunkSize / 2); // #MN: spawns player in the middle of terrain generations
-        GameManager.manager.player = Instantiate(GameManager.manager.player, new Vector3(spawnPoint, spawnPoint + chunkGenerator.yScale + 5, spawnPoint), Quaternion.identity); // #MN: ensures spawning above the terrain
-    }
+    public List<Vector3> loadedChunkPositions = new List<Vector3>();
+    
+    public ChunkGenerator chunkGenerator;
 
     void Update()
     {
         // handles chunk loading
-        CheckAndChangeTarget(GameManager.manager.player);
+        if (chunkGenerator != null)
+        { 
+            CheckAndChangeTarget(GameManager.manager.levelManager.player);
+            Debug.Log($"Player Pos: {GameManager.manager.levelManager.player.transform.position}");
+        }
     }
-    
-    
-    
+
+    public void CreateManager()
+    {
+        chunkGenerator = this.gameObject.AddComponent<ChunkGenerator>();
+
+        //intitalizes chunk subclass
+        loadedChunks = chunkGenerator.GenerateNodes(); // this references the current script that handles the generated chunks
+
+        //setting target chunk
+        targetChunk = chunkGenerator.StartingTarget;
+
+        Debug.Log($"Inital Target Chunk: {targetChunk.chunkObject.transform.position}");
+
+        // spawning debug player on target chunk
+        float spawnPositioning = targetChunk.chunkObject.transform.position.x + ((float)chunkGenerator.chunkSize / 2); // #MN: spawns player in the middle of terrain generations
+        Vector3 spawnPoint = new Vector3(spawnPositioning, GameManager.manager.yScale + 5, spawnPositioning);
+        GameManager.manager.levelManager.SpawnDebugPlayer(spawnPoint, chunkGenerator);
+        GameManager.manager.levelManager.player.transform.position = spawnPoint;
+        Debug.LogError($"spawn position: {spawnPoint}, player spawned at: {GameManager.manager.levelManager.player.transform.position}");
+        Debug.LogWarning($"spawn point set");
+    }
+
     private void CheckAndChangeTarget(GameObject targeter) // targeter is the object being checked for the Target Chunk, which is the chunk the targeter is currently in
     {
         bool changeTarget = false;
         Vector3 changeDistance = Vector3.zero;
-        int chunkSize = chunkGenerator.chunkSize;
+        int chunkSize = chunkGenerator.chunkSize; // passing info for easy parsing
 
         //checking to load chunks in x axis
         if (targeter.transform.position.x < targetChunk.chunkObject.transform.position.x)
@@ -81,7 +83,9 @@ public class ChunkManager : MonoBehaviour
     // only happens on target change
     private void FindTarget(Chunk previousTarget, Vector3 changeDistance)
     {
-        targetChunk = loadedChunks[previousTarget.chunkObject.transform.position + changeDistance];
+        Vector3 newTargetPos = previousTarget.chunkObject.transform.position + changeDistance;
+        Debug.LogWarning($"newTarget: {newTargetPos}");
+        targetChunk = loadedChunks[newTargetPos];
     }
     private void RenderFromTarget()
     {
@@ -156,11 +160,12 @@ public class ChunkManager : MonoBehaviour
     }
 
     private void LoadChunksAlongAxis(Vector3 loadStart, Vector3 Axis) // loads chunks along an axis, this axis should be the edge of the rendering
-    { 
-        // chunks load along the perpendicular axis to the one the target is following!
-        int renderSize = GameManager.manager.renderDistance * 2;
-        int chunkSize = GameManager.manager.chunkSize;
+    {
+        // passing info for easy parsing
+        int renderSize = GameManager.manager.renderDistance * 2 + 1;
+        int chunkSize = chunkGenerator.chunkSize;
 
+        // chunks load along the perpendicular axis to the one the target is following!
         if (Axis.x != 0) // axis is on X
         {
             //Debug.LogWarning("Chunks loading on xAxis");
@@ -210,7 +215,7 @@ public class ChunkManager : MonoBehaviour
 
     private void ConnectAndLoadChunk(Chunk loadingChunk, Vector3 newPos)
     {
-        int chunkSize = GameManager.manager.chunkSize;
+        int chunkSize = chunkGenerator.chunkSize; // passing info for easy parsing
 
         //calculating neighboring chunks needed for loading the mesh
         Vector3 east = newPos + new Vector3(chunkSize, 0, 0);
@@ -240,5 +245,3 @@ public class ChunkManager : MonoBehaviour
     }
     #endregion
 }
-
-

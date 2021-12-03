@@ -15,8 +15,6 @@ public enum GameState
 { 
     TITLEMENU,
     GAMEPLAY,
-    WIN,
-    LOSE,
     PAUSE,
     OPTIONS,
     CREDITS
@@ -35,15 +33,15 @@ public class GameManager : MonoBehaviour
     public int chunkSize = 10;
     public float yScale = 1;
     public float roughness = 1;
-    
+
     [Header("Passed Fields")]
     public UIManager uiManager;
+    public LevelManager levelManager;
     public ChunkManager chunkManager;
     public MeshGeneratorV1 meshGenerator;
     public Text saveText;
     public Text loadText;
     public Material groundMat;
-    public GameObject player;
 
     private GameState gameState;
     private GameState savedScreenState;
@@ -53,6 +51,8 @@ public class GameManager : MonoBehaviour
     private float textFadeWaitTime = 1.5f;
 
     private int renderSize;
+
+    //accessors
     public int RenderSize { get { return renderSize; } }
 
     void Awake()
@@ -72,11 +72,10 @@ public class GameManager : MonoBehaviour
         loadText.CrossFadeAlpha(0, .1f, true);
 
         renderSize = (manager.renderDistance * 2); // #MN: x2 doubles radius into diameter
+        Debug.Log($"RenderSize: {renderSize}");
 
         gameState = GameState.TITLEMENU;
     }
-
-    
 
     void Update() 
     {
@@ -101,23 +100,15 @@ public class GameManager : MonoBehaviour
                     if (SceneManager.GetActiveScene() != SceneManager.GetSceneByBuildIndex(1))
                     {
                         SceneManager.LoadScene(1);
+                        chunkManager.CreateManager();
                         SaveScreenState();
                     }
                     uiManager.LoadGameplay();
                     return;
                 }
-            case GameState.WIN:
-                {
-                    uiManager.LoadWinScreen();
-                    return;
-                }
-            case GameState.LOSE:
-                {
-                    uiManager.LoadLoseScreen();
-                    return;
-                }
             case GameState.PAUSE:
                 {
+                    Time.timeScale = 0;
                     uiManager.LoadPauseScreen();
                     return;
                 }
@@ -253,11 +244,11 @@ public class GameManager : MonoBehaviour
 class SaveInfo
 {
     public int scene;
-    public float health;
+    /*public float health;
     public float eXP;
     public int score;
     public float shield;
     public float mana;
-    public int life;
+    public int life;*/
 }
 

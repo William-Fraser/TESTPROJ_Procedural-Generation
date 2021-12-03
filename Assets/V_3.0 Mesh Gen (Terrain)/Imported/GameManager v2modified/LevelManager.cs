@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class LevelManager : MonoBehaviour
 {
-    public static LevelManager control;
-    
+    public GameObject player;
+
     public void ChangeGameStateToTitleMenu()
     {
         GameManager.manager.ChangeState(GameState.TITLEMENU);
@@ -14,16 +14,6 @@ public class LevelManager : MonoBehaviour
     public void ChangeGameStateToGamePlay()
     {
         GameManager.manager.ChangeState(GameState.GAMEPLAY);
-    }
-    
-    public void ChangeGameStateToWin()
-    {
-        GameManager.manager.ChangeState(GameState.WIN);
-    }
-    
-    public void ChangeGameStateToLose()
-    {
-        GameManager.manager.ChangeState(GameState.LOSE);
     }
 
     public void ChangeGameStateToPause()
@@ -43,6 +33,7 @@ public class LevelManager : MonoBehaviour
 
     public void ChangeGameStateToPrevious()
     {
+        Time.timeScale = 1;
         GameManager.manager.ReturnToPreviousState();
     }
 
@@ -61,4 +52,10 @@ public class LevelManager : MonoBehaviour
         Application.Quit();
     }
 
+    public void SpawnDebugPlayer(Vector3 spawnPoint, ChunkGenerator chunkGenerator)
+    {
+
+        Debug.LogError("this runs once");
+        Instantiate(player, spawnPoint, Quaternion.identity); // #MN: ensures spawning above the terrain
+    }
 }

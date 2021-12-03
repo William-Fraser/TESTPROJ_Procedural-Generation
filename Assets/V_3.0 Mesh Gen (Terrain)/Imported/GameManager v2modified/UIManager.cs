@@ -6,8 +6,6 @@ public class UIManager : MonoBehaviour
 {
     public Canvas titleMenu;
     public Canvas gameplay;
-    public Canvas winDisplay;
-    public Canvas loseDisplay;
     public Canvas pause;
     public Canvas options;
     public Canvas credits;
@@ -23,8 +21,6 @@ public class UIManager : MonoBehaviour
         options.enabled = false;
         credits.enabled = false;
         gameplay.enabled = false;
-        winDisplay.enabled = false;
-        loseDisplay.enabled = false;
         pause.enabled = false;
     }
 
@@ -38,18 +34,6 @@ public class UIManager : MonoBehaviour
     {
         DisableAll();
         gameplay.enabled = true;
-    }
-
-    public void LoadWinScreen()
-    {
-        DisableAll();
-        winDisplay.enabled = true;
-    }
-
-    public void LoadLoseScreen()
-    {
-        DisableAll();
-        loseDisplay.enabled = true;
     }
 
     public void LoadPauseScreen()

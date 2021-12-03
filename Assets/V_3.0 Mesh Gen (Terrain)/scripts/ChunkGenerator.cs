@@ -8,20 +8,25 @@ public class ChunkGenerator : MonoBehaviour
     public float yScale;
     public float roughness;
 
-    private void Start()
+    private Chunk startingTarget;
+    public Chunk StartingTarget { get { return startingTarget; } }
+
+    public void Awake()
     {
         chunkSize = GameManager.manager.chunkSize;
         yScale = GameManager.manager.yScale;
         roughness = GameManager.manager.roughness;
     }
-
+  
     //seperate into different methods
-    public void GenerateNodes(ChunkManager chunkManager)
+    public Dictionary<Vector3, Chunk> GenerateNodes()
     {
+        Dictionary<Vector3, Chunk> loadingChunks = new Dictionary<Vector3, Chunk>();
         int loadingSize = GameManager.manager.RenderSize + 2; // #MN: +2 add's edge buffer for MeshGenerator to rend to
         int targetChunkMarker = (loadingSize - GameManager.manager.renderDistance);
         int seed = GameManager.manager.seed;
-        Debug.Log($"rendersize: {loadingSize}");
+        
+        Debug.Log($"loadingSize: {loadingSize}");
 
         for (int x = seed; x <= (seed + loadingSize); x++)
         {
@@ -31,17 +36,19 @@ public class ChunkGenerator : MonoBehaviour
                 Vector3 positioning = new Vector3(x * chunkSize, 0, z * chunkSize);
                 Chunk chunkGeneration = new Chunk((int)positioning.x, (int)positioning.z, chunkSize, roughness, yScale);
 
-                //populate list and dictionary to call and save chunks
-                chunkManager.LoadedChunkPositions.Add(chunkGeneration.chunkObject.transform.position);
-                chunkManager.LoadedChunks.Add(chunkGeneration.chunkObject.transform.position, chunkGeneration);
+                //populate dictionary to call and save chunks
+                loadingChunks.Add(chunkGeneration.chunkObject.transform.position, chunkGeneration);
 
                 //setting target chunk
                 if (x == targetChunkMarker && z == targetChunkMarker)
                 {
-                    chunkManager.TargetChunk = chunkGeneration;
+                    startingTarget = chunkGeneration;
                 }
             }
         }
+
+        Debug.LogWarning("all chunks loaded");
+        return loadingChunks;
     }
 }
 

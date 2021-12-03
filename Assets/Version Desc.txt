@@ -3,3 +3,9 @@
 0.1 - Self made wall generator, from instructor knowledge GameObject.CreatePrimitive().
 
 1.0 - Tutorial based cave generator, tutorial: https://learn.unity.com/project/procedural-cave-generation-tutorial.
+
+2.0 - terrain Generation test
+
+2.5 - mesh generation
+
+3.0 - Infinite Terrain Generation with Mesh
